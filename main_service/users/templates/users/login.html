@@ -1,0 +1,52 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Логін</title>
+    <script>
+        async function loginUser(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById("loginForm"));
+
+            const response = await fetch("/users/login/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: formData.get("email"),
+                    password: formData.get("password")
+                })
+            });
+
+            const data = await response.json();
+            const messageDiv = document.getElementById("message");
+
+            if (response.ok) {
+                messageDiv.style.color = "green";
+                messageDiv.innerText = "Login successful! Token: " + data.access;
+            } else {
+                messageDiv.style.color = "red";
+                messageDiv.innerText = data.error || "Error login";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm" onsubmit="loginUser(event)">
+        <label>Email:</label>
+        <input type="email" name="email" required>
+        <br>
+        <label>Password:</label>
+        <input type="password" name="password" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="message"></p>
+</body>
+</html>

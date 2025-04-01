@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <script>
+        async function registerUser(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById("registerForm"));
+
+            // Отримати CSRF токен з cookie
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const response = await fetch("/users/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken  // Додати CSRF токен до заголовків
+                },
+                body: JSON.stringify({
+                    email: formData.get("email"),
+                    username: formData.get("username"),
+                    password: formData.get("password")
+                })
+            });
+
+            console.log("Response received:", response);
+
+            const data = await response.json();
+            const messageDiv = document.getElementById("message");
+
+            if (response.ok) {
+                messageDiv.style.color = "green";
+                messageDiv.innerText = data.message;
+            } else {
+                messageDiv.style.color = "red";
+                messageDiv.innerText = data.error || "Error registration";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Register</h2>
+    <form id="registerForm" onsubmit="registerUser(event)">
+        {% csrf_token %} <!-- Додаємо CSRF токен -->
+        <label>Email:</label>
+        <input type="email" name="email" required>
+        <br>
+        <label>Username:</label>
+        <input type="text" name="username" required>
+        <br>
+        <label>Password:</label>
+        <input type="password" name="password" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="message"></p>
+</body>
+</html>
