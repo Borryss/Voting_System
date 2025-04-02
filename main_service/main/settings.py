@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
 
     'users',
+    'voting',
 
 ]
 
@@ -143,6 +144,11 @@ STATICFILES_DIRS = [BASE_DIR / "main/static"]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'fire', 'media')
 MEDIA_URL = '/media/'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 
 # CACHES = {

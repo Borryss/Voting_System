@@ -1,69 +1,70 @@
+import uuid
+import json
+
+
 from django.shortcuts import render
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth.hashers import check_password
+from django.views.decorators.csrf import csrf_exempt
 from .models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
+from django.http import JsonResponse
 
 
+
+@csrf_exempt
 def register_page(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+    if request.method == "GET":
+        return render(request, "users/register.html")
 
-        # Перевірка, чи вже існує користувач з таким email
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"message": "Invalid JSON"}, status=400)
+
+        email = data.get("email")
+        username = data.get("username")
+        password = data.get("password")
+
+        if not email or not username or not password:
+            return JsonResponse({"message": "All fields are required"}, status=400)
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({"message": "Username already taken"}, status=400)
+
         if User.objects.filter(email=email).exists():
-            return render(request, "users/register.html", {"error": "Email already taken"})
+            return JsonResponse({"message": "Email already registered"}, status=400)
 
-        # Створення нового користувача
-        user = User(email=email, username=username)
+        user = User(id=uuid.uuid4(), email=email, username=username)
         user.set_password(password)
         user.save()
 
-        # Повернення успішного повідомлення
-        return render(request, "users/register.html", {"message": "User registered successfully"})
-
-    return render(request, "users/register.html")
+        return JsonResponse({"message": "User registered successfully"}, status=201)
 
 
-class RegisterView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get("email")
-        username = request.data.get("username")
-        password = request.data.get("password")
-
-        if User.objects.filter(email=email).exists():
-            return Response({"error": "Email already taken"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = User(email=email, username=username)
-        user.set_password(password)
-        user.save()
-
-        return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
-
+@csrf_exempt
 def login_page(request):
-    return render(request, "users/login.html")
+    if request.method == "GET":
+        return render(request, "users/login.html")
 
-class LoginView(APIView):
-    permission_classes = [AllowAny]
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            password = data.get("password")
 
-    def post(self, request):
-        email = request.data.get("email")
-        password = request.data.get("password")
+            if not email or not password:
+                return JsonResponse({"message": "Email and password are required"}, status=400)
 
-        user = User.objects.filter(email=email).first()
-        if not user:
-            return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = User.objects.filter(email=email).first()
 
-        if not check_password(password, user.password):
-            return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+            if not user:
+                return JsonResponse({"message": "User with this email does not exist"}, status=404)
 
-        # Generate a JWT token
-        refresh = RefreshToken.for_user(user)
-        return Response({"access": str(refresh.access_token), "refresh": str(refresh)})
+            if not user.check_password(password):
+                return JsonResponse({"message": "Incorrect password"}, status=401)
+
+            return JsonResponse({"message": "Login successful"}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"message": "Invalid JSON"}, status=400)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)

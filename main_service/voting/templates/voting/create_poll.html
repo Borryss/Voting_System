@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Poll</title>
+</head>
+<body>
+    <h2>Create Poll</h2>
+    <form method="POST">
+    {% csrf_token %}
+    {{ poll_form.as_p }}
+    <h3>Options</h3>
+    {% for form in option_forms %}
+        {{ form.as_p }}
+    {% endfor %}
+    <button type="submit">Create Poll</button>
+</form>
+</body>
+</html>
