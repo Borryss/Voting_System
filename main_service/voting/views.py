@@ -4,6 +4,8 @@ from .forms import PollForm, PollOptionForm
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
+
+
 @login_required
 def create_poll(request):
     if request.method == 'POST':
@@ -32,3 +34,8 @@ def poll_detail(request, poll_id):
         return redirect('poll_detail', poll_id=poll.id)
     options = poll.options.all()
     return render(request, 'voting/poll_detail.html', {'poll': poll, 'options': options})
+
+def ajax_test(request):
+    # Відправка відповіді у форматі JSON
+
+    return JsonResponse({'message': 'ajax working good'})

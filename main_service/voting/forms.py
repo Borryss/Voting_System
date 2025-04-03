@@ -4,9 +4,9 @@ from .models import Poll, PollOption
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll
-        fields = ['title', 'description']
+        fields = ['title']
 
 class PollOptionForm(forms.ModelForm):
     class Meta:
         model = PollOption
-        fields = ['option_text']
+        fields = ['description', 'option_text']  # Додаємо поле для опису опції

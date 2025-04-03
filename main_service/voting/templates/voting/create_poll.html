@@ -1,19 +1,51 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Poll</title>
 </head>
 <body>
     <h2>Create Poll</h2>
-    <form method="POST">
+<form method="POST">
     {% csrf_token %}
     {{ poll_form.as_p }}
     <h3>Options</h3>
     {% for form in option_forms %}
-        {{ form.as_p }}
+        <div>
+            {{ form.option_text.label }}: {{ form.option_text }}
+            {{ form.description.label }}: {{ form.description }}
+        </div>
     {% endfor %}
     <button type="submit">Create Poll</button>
 </form>
+
+<!-- Кнопка для AJAX -->
+<button id="ajaxButton">Click me for AJAX</button>
+<p id="ajaxMessage"></p> <!-- Місце для виведення повідомлення -->
+
+
+    <script>
+        document.getElementById('ajaxButton').addEventListener('click', function() {
+            // Відправка AJAX-запиту
+            fetch('/voting/ajax_test/', {  // Вказуємо правильний шлях до ajax_test
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json()) // Перетворення відповіді в JSON
+            .then(data => {
+                // Виведення отриманого повідомлення на сторінці
+                document.getElementById('ajaxMessage').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('ajaxMessage').innerText = 'Error occurred.';
+            });
+        });
+
+    </script>
 </body>
 </html>

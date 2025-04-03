@@ -2,31 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>poll.description</title>
+    <title>poll.title</title>
 </head>
 <body>
   <h2>{{ poll.title }}</h2>
-  <p>{{ poll.description }}</p>
-  <form method="POST">
+<form method="POST">
     {% csrf_token %}
     {% for option in options %}
-        <label>
-            <input type="radio" name="option" value="{{ option.id }}">
-            {{ option.option_text }} ({{ option.votes }} votes)
-        </label><br>
+        <div>
+            <label>
+                <input type="radio" name="option" value="{{ option.id }}">
+                {{ option.option_text }} - {{ option.description }} ({{ option.votes }} votes)
+            </label><br>
+        </div>
     {% endfor %}
     <button type="submit">Vote</button>
-  </form>
-
-    <button onclick="copyLink()">Copy Poll Link</button>
-    <script>
-    function copyLink() {
-        const pollLink = window.location.href;
-        navigator.clipboard.writeText(pollLink)
-            .then(() => alert("Poll link copied to clipboard!"))
-            .catch(err => console.error('Error copying link:', err));
-    }
-    </script>
+</form>
 
 </body>
 </html>
