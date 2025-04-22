@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,44 +9,53 @@
 </head>
 <body>
     <h2>Create Poll</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ poll_form.as_p }}
-    <h3>Options</h3>
-    {% for form in option_forms %}
-        <div>
-            {{ form.option_text.label }}: {{ form.option_text }}
-            {{ form.description.label }}: {{ form.description }}
+    <form method="POST">
+        {% csrf_token %}
+        {{ poll_form.as_p }}
+        <h3>Options</h3>
+
+        <div id="optionForms">
+            {% for form in option_forms %}
+                {% include 'voting/option_form_snippet.html' with form=form %}
+            {% endfor %}
         </div>
-    {% endfor %}
-    <button type="submit">Create Poll</button>
-</form>
+        <button type="submit">Create Poll</button>
+    </form>
 
-<!-- Кнопка для AJAX -->
-<button id="ajaxButton">Click me for AJAX</button>
-<p id="ajaxMessage"></p> <!-- Місце для виведення повідомлення -->
-
+    <button type="button" id="addOptionBtn">Add Option</button>
 
     <script>
-        document.getElementById('ajaxButton').addEventListener('click', function() {
-            // Відправка AJAX-запиту
-            fetch('/voting/ajax_test/', {  // Вказуємо правильний шлях до ajax_test
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+        const addOptionUrl = "{% url 'add_option_form' %}";
+        let nextOptionIndex = {{ option_forms|length }};
+
+        // Додавання нової опції
+        document.getElementById('addOptionBtn').addEventListener('click', function() {
+            fetch(`${addOptionUrl}?next_index=${nextOptionIndex}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(response => response.json()) // Перетворення відповіді в JSON
+            .then(response => response.json())
             .then(data => {
-                // Виведення отриманого повідомлення на сторінці
-                document.getElementById('ajaxMessage').innerText = data.message;
+                const container = document.createElement('div');
+                container.innerHTML = data.form_html;
+                document.getElementById('optionForms').appendChild(container.firstElementChild);
+                nextOptionIndex += 1;
             })
             .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('ajaxMessage').innerText = 'Error occurred.';
+                console.error('Error adding option:', error);
             });
         });
 
+        // Видалення опції (і доданих, і початкових)
+        document.getElementById('optionForms').addEventListener('click', function(e) {
+            if (e.target.classList.contains('deleteOptionBtn')) {
+                const optionDiv = e.target.closest('.option-form');
+                if (optionDiv) {
+                    optionDiv.remove();
+                }
+            }
+        });
+    });
     </script>
 </body>
 </html>
