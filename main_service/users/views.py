@@ -56,11 +56,17 @@ def login_page(request):
 
             user = User.objects.filter(email=email).first()
 
+            if user.check_password(password):
+                request.session['user_id'] = str(user.id)
+                return JsonResponse({"message": "Login successful"}, status=200)
+
             if not user:
                 return JsonResponse({"message": "User with this email does not exist"}, status=404)
 
             if not user.check_password(password):
                 return JsonResponse({"message": "Incorrect password"}, status=401)
+
+
 
             return JsonResponse({"message": "Login successful"}, status=200)
 

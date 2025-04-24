@@ -6,9 +6,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+    .debug-bar {
+        display: flex;
+        background-color: #333;
+        padding: 10px;
+        justify-content: start;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .debug-bar a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        background-color: #444;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+    .debug-bar a:hover {
+        background-color: #007bff;
+    }
+</style>
 
 </head>
 <body>
+    <div class="debug-bar" id="debug-bar">
+    <!-- Навігаційні посилання будуть додаватися тут через JS -->
+    </div>
     <h2>Login</h2>
     <form id="loginForm" onsubmit="loginUser(event)">
         {% csrf_token %}
@@ -22,26 +46,50 @@
     </form>
     <p id="message"></p>
     <script>
-        async function loginUser(event) {
-            event.preventDefault();
+    async function loginUser(event) {
+        event.preventDefault();
 
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            const response = await fetch("/users/login/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
-                body: JSON.stringify({ email: email, password: password }),
-            });
+        const response = await fetch("/users/login/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({ email: email, password: password }),
+        });
 
-            const data = await response.json();
-            document.getElementById("message").innerText = data.message;
+        const data = await response.json();
+        document.getElementById("message").innerText = data.message;
+
+        if (data.message === "Login successful") {
+            setTimeout(() => {
+                window.location.href = "/voting/create";
+            }, 1000);
         }
+    }
+
+    // Масив URL для створення навігаційних елементів
+    const urls = [
+        { name: "/voting/create", label: "Create Poll" },
+        { name: "/users/register", label: "Register" },
+        { name: "/users/login", label: "Login" },
+        { name: "/", label: "Main" }
+    ];
+
+    const debugBar = document.getElementById('debug-bar');
+
+    urls.forEach(item => {
+        const link = document.createElement('a');
+        link.href = item.name;
+        link.innerText = item.label;
+        debugBar.appendChild(link);
+    });
     </script>
+
 </body>
 </html>
 

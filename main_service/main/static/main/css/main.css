@@ -47,3 +47,39 @@ button {
 button:hover {
     background: #5e35b1;
 }
+
+
+
+
+
+
+.debug-bar {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: 'Courier New', monospace;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    margin: 0; /* Видаляємо відступи, щоб бар був прямо на верху */
+    position: fixed; /* Закріплюємо в верхній частині */
+    top: 0; /* Відстань від верхнього краю */
+    left: 0; /* Відстань від лівого краю */
+    right: 0; /* Відстань від правого краю */
+    z-index: 1000; /* Робимо його завжди поверх решти елементів */
+}
+
+.debug-link {
+    flex: 1; /* Кожна силка буде займати рівну частину доступної ширини */
+    text-align: center;
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.debug-link:hover {
+    background-color: #555; /* Зміна кольору при наведенні */
+}

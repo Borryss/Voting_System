@@ -6,8 +6,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Poll</title>
+    <style>
+    .debug-bar {
+        display: flex;
+        background-color: #333;
+        padding: 10px;
+        justify-content: start;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .debug-bar a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        background-color: #444;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+    .debug-bar a:hover {
+        background-color: #007bff;
+    }
+    </style>
 </head>
 <body>
+    <div class="debug-bar" id="debug-bar">
+        <!-- Навігаційні посилання будуть додаватися тут через JS -->
+    </div>
+
     <h2>Create Poll</h2>
     <form method="POST">
         {% csrf_token %}
@@ -25,37 +50,55 @@
     <button type="button" id="addOptionBtn">Add Option</button>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const addOptionUrl = "{% url 'add_option_form' %}";
-        let nextOptionIndex = {{ option_forms|length }};
+    // Масив URL для створення навігаційних елементів
+        const urls = [
+            { name: "/voting/create", label: "Create Poll" },
+            { name: "/users/register", label: "Register" },
+            { name: "/users/login", label: "Login" },
+            { name: "/", label: "Main" }
+        ];
 
-        // Додавання нової опції
-        document.getElementById('addOptionBtn').addEventListener('click', function() {
-            fetch(`${addOptionUrl}?next_index=${nextOptionIndex}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const container = document.createElement('div');
-                container.innerHTML = data.form_html;
-                document.getElementById('optionForms').appendChild(container.firstElementChild);
-                nextOptionIndex += 1;
-            })
-            .catch(error => {
-                console.error('Error adding option:', error);
+        const debugBar = document.getElementById('debug-bar');
+
+        // Створення кнопок для кожного елементу в масиві
+        urls.forEach(item => {
+            const link = document.createElement('a');
+            link.href = item.name;
+            link.innerText = item.label;
+            debugBar.appendChild(link);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const addOptionUrl = "{% url 'add_option_form' %}";
+            let nextOptionIndex = {{ option_forms|length }};
+
+            // Додавання нової опції
+            document.getElementById('addOptionBtn').addEventListener('click', function() {
+                fetch(`${addOptionUrl}?next_index=${nextOptionIndex}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.createElement('div');
+                    container.innerHTML = data.form_html;
+                    document.getElementById('optionForms').appendChild(container.firstElementChild);
+                    nextOptionIndex += 1;
+                })
+                .catch(error => {
+                    console.error('Error adding option:', error);
+                });
+            });
+
+            // Видалення опції (і доданих, і початкових)
+            document.getElementById('optionForms').addEventListener('click', function(e) {
+                if (e.target.classList.contains('deleteOptionBtn')) {
+                    const optionDiv = e.target.closest('.option-form');
+                    if (optionDiv) {
+                        optionDiv.remove();
+                    }
+                }
             });
         });
-
-        // Видалення опції (і доданих, і початкових)
-        document.getElementById('optionForms').addEventListener('click', function(e) {
-            if (e.target.classList.contains('deleteOptionBtn')) {
-                const optionDiv = e.target.closest('.option-form');
-                if (optionDiv) {
-                    optionDiv.remove();
-                }
-            }
-        });
-    });
     </script>
 </body>
 </html>

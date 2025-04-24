@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+
+from users.models import User
 from .models import Poll, PollOption, Vote
 from .forms import PollForm, PollOptionForm
 from django.http import JsonResponse
@@ -7,8 +9,12 @@ from django.template.loader import render_to_string
 
 
 
-@login_required
+
 def create_poll(request):
+    user_id = request.session.get('user_id')
+    if not user_id or not User.objects.filter(id=user_id).exists():
+        return redirect('login')
+
     if request.method == 'POST':
         poll_form = PollForm(request.POST)
         option_forms = []
@@ -29,6 +35,7 @@ def create_poll(request):
     else:
         poll_form = PollForm()
         option_forms = [PollOptionForm(prefix=f'option_{i}') for i in range(3)]
+
     return render(request, 'voting/create_poll.html', {
         'poll_form': poll_form,
         'option_forms': option_forms
